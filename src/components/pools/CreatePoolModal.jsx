@@ -11,6 +11,7 @@ export default function CreatePoolModal({ onClose }) {
   const [entryFee, setEntryFee] = useState(50);
   const [splitRule, setSplitRule] = useState("split-correct");
   const game = GAMES.find((g) => g.id === gameId);
+  const feePct = ((entryFee - 10) / (200 - 10)) * 100;
 
   const submit = () => {
     createPool(gameId, title || `${game.a} vs ${game.b} squad pool`, entryFee, splitRule);
@@ -33,7 +34,8 @@ export default function CreatePoolModal({ onClose }) {
       </Field>
       <Field label={`Entry fee (pts) — ${entryFee}`}>
         <input type="range" min={10} max={200} step={10} value={entryFee}
-          onChange={(e) => setEntryFee(Number(e.target.value))} style={{ width: "100%" }} />
+          onChange={(e) => setEntryFee(Number(e.target.value))}
+          className="huddle-range" style={{ "--fill": `${feePct}%` }} />
       </Field>
       <Field label="How the pot splits">
         <div style={{ display: "flex", gap: 8 }}>

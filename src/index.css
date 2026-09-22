@@ -1,27 +1,54 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg: #0b1712;
-  --surface: #12211b;
-  --surface-2: #1a2e25;
+  --bg: #0a1410;
+  --surface: #121f19;
+  --surface-2: #1a2b22;
+  --surface-3: #22392c;
   --amber: #f2a93b;
-  --red: #d65a4a;
+  --amber-bright: #ffc266;
+  --red: #e0604e;
   --green: #4fbe82;
-  --text: #edf3ee;
-  --text-dim: #8fa69a;
-  --border: #24382f;
+  --blue: #7da9ff;
+  --text: #f4f8f3;
+  --text-dim: #93a99c;
+  --text-faint: #5e7568;
+  --border: #223228;
+  --border-bright: #36503f;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-md: 0 6px 20px -6px rgba(0,0,0,0.45), 0 2px 8px -2px rgba(0,0,0,0.3);
+  --shadow-lg: 0 16px 40px -12px rgba(0,0,0,0.55), 0 4px 14px -4px rgba(0,0,0,0.4);
+  --shadow-glow-amber: 0 0 0 1px rgba(242,169,59,0.18), 0 8px 24px -6px rgba(242,169,59,0.3);
+  --shadow-glow-red: 0 0 0 1px rgba(224,96,78,0.18), 0 8px 24px -6px rgba(224,96,78,0.28);
 }
 
 * {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html, body {
   margin: 0;
   padding: 0;
   background: var(--bg);
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 900px 620px at 12% -8%, rgba(242,169,59,0.11), transparent 60%),
+    radial-gradient(ellipse 700px 560px at 108% 4%, rgba(79,190,130,0.09), transparent 58%),
+    radial-gradient(ellipse 600px 500px at 50% 115%, rgba(125,169,255,0.06), transparent 55%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+#root {
+  margin: 0;
+  padding: 0;
   color: var(--text);
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 .huddle-scroll::-webkit-scrollbar {
@@ -32,7 +59,90 @@ select, input, button {
   font-family: 'Inter', sans-serif;
 }
 
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgba(242,169,59,0.3);
+}
+
+a { color: var(--amber); }
+
+/* Custom range slider — premium track + thumb, replaces the native control */
+input[type="range"].huddle-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--amber) 0%, var(--amber) var(--fill, 50%), var(--surface-3) var(--fill, 50%), var(--surface-3) 100%);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"].huddle-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--amber-bright);
+  border: 3px solid #0a1410;
+  box-shadow: 0 0 0 1px rgba(242,169,59,0.4), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+input[type="range"].huddle-range::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+input[type="range"].huddle-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--amber-bright);
+  border: 3px solid #0a1410;
+  box-shadow: 0 0 0 1px rgba(242,169,59,0.4), 0 2px 8px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+input[type="range"].huddle-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.huddle-card-hover {
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.huddle-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-bright);
+  box-shadow: var(--shadow-md);
+}
+.huddle-card-hover:active {
+  transform: translateY(0px) scale(0.994);
+}
+
+.huddle-tab-btn {
+  transition: color 0.15s ease;
+}
+
 @keyframes floatUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pillPop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

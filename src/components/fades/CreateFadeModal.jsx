@@ -10,6 +10,7 @@ export default function CreateFadeModal({ onClose }) {
   const [side, setSide] = useState(GAMES[0].a);
   const [stake, setStake] = useState(50);
   const game = GAMES.find((g) => g.id === gameId);
+  const stakePct = ((stake - 10) / (300 - 10)) * 100;
 
   const submit = () => {
     createFade(gameId, side, stake, actingAs);
@@ -35,9 +36,10 @@ export default function CreateFadeModal({ onClose }) {
       </Field>
       <Field label={`Stake (pts) — ${stake} each side`}>
         <input type="range" min={10} max={300} step={10} value={stake}
-          onChange={(e) => setStake(Number(e.target.value))} style={{ width: "100%" }} />
+          onChange={(e) => setStake(Number(e.target.value))}
+          className="huddle-range" style={{ "--fill": `${stakePct}%` }} />
       </Field>
-      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 10 }}>
+      <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 10, lineHeight: 1.5 }}>
         Whoever takes the other side matches your {stake} pts. Winner takes the pot minus a {Math.round(RAKE * 100)}% house rake.
       </div>
       <Button style={{ width: "100%", justifyContent: "center" }} onClick={submit}>
