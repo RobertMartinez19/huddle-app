@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #0b1712;
+  --surface: #12211b;
+  --surface-2: #1a2e25;
+  --amber: #f2a93b;
+  --red: #d65a4a;
+  --green: #4fbe82;
+  --text: #edf3ee;
+  --text-dim: #8fa69a;
+  --border: #24382f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+
+.huddle-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+select, input, button {
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes floatUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
