@@ -3,6 +3,7 @@ import { FRIENDS, AVATAR_COLORS } from "../data/friends.js";
 import { useApp } from "../context/AppContext.jsx";
 import Avatar from "./ui/Avatar.jsx";
 import PointsTicker from "./ui/PointsTicker.jsx";
+import TiltCard from "./ui/TiltCard.jsx";
 
 export default function Header() {
   const { actingAs, setActingAs, balances } = useApp();
@@ -27,16 +28,18 @@ export default function Header() {
             GROUP POOLS · FRIEND FADES
           </div>
         </div>
-        <div style={{
-          textAlign: "right", background: "var(--surface-2)", border: "1px solid var(--border)",
-          borderRadius: 12, padding: "8px 12px", boxShadow: "var(--shadow-sm)",
-        }}>
-          <div style={{ fontSize: 9.5, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700 }}>Balance</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end", marginTop: 2 }}>
-            <PointsTicker value={balances[actingAs]} size={21} glow />
-            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>pts</span>
+        <TiltCard maxTilt={6}>
+          <div style={{
+            textAlign: "right", background: "var(--surface-2)", border: "1px solid var(--border)",
+            borderRadius: 12, padding: "8px 12px", boxShadow: "var(--shadow-sm)",
+          }}>
+            <div style={{ fontSize: 9.5, color: "var(--text-faint)", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 700 }}>Balance</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end", marginTop: 2 }}>
+              <PointsTicker value={balances[actingAs]} size={21} glow />
+              <span style={{ fontSize: 11, color: "var(--text-dim)" }}>pts</span>
+            </div>
           </div>
-        </div>
+        </TiltCard>
       </div>
 
       {/* Acting-as switcher — lets you demo the whole social loop solo */}

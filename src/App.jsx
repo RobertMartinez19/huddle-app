@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AppProvider, useApp } from "./context/AppContext.jsx";
+import Ambient from "./components/Ambient.jsx";
 import Header from "./components/Header.jsx";
 import Nav from "./components/Nav.jsx";
 import Dashboard from "./components/Dashboard.jsx";
@@ -50,8 +51,12 @@ function Shell() {
 
   return (
     <div style={{
-      background: "var(--bg)", color: "var(--text)", minHeight: "100dvh",
-      maxWidth: 480, margin: "0 auto", position: "relative", paddingBottom: 90,
+      // Transparent on purpose — the fixed .huddle-ambient layer (behind
+      // this, z-index 0) needs to show through. The dark base tone still
+      // comes from <body>, so nothing looks unstyled if the ambient layer
+      // is ever absent.
+      background: "transparent", color: "var(--text)", minHeight: "100dvh",
+      maxWidth: 480, margin: "0 auto", position: "relative", zIndex: 1, paddingBottom: 90,
     }}>
       <Header />
 
@@ -76,8 +81,11 @@ function Shell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <Shell />
-    </AppProvider>
+    <>
+      <Ambient />
+      <AppProvider>
+        <Shell />
+      </AppProvider>
+    </>
   );
 }

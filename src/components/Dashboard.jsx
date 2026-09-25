@@ -5,6 +5,7 @@ import { GAMES } from "../data/games.js";
 import Card from "./ui/Card.jsx";
 import Pill from "./ui/Pill.jsx";
 import PointsTicker from "./ui/PointsTicker.jsx";
+import TiltCard from "./ui/TiltCard.jsx";
 
 export default function Dashboard({ onGoPools, onGoFades }) {
   const { actingAs, pools, fades, houseTake } = useApp();
@@ -15,6 +16,7 @@ export default function Dashboard({ onGoPools, onGoFades }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <TiltCard maxTilt={5}>
       <Card style={{
         background: "linear-gradient(150deg, #18291F 0%, #0F1D17 55%, #0D1913 100%)",
         border: "1px solid var(--border-bright)", position: "relative", overflow: "hidden",
@@ -46,6 +48,7 @@ export default function Dashboard({ onGoPools, onGoFades }) {
           </div>
         </div>
       </Card>
+      </TiltCard>
 
       <div style={{ display: "flex", gap: 10 }}>
         <Card accent="var(--amber)" style={{ flex: 1 }} onClick={onGoPools}>
