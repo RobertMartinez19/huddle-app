@@ -21,6 +21,10 @@
   --shadow-lg: 0 16px 40px -12px rgba(0,0,0,0.55), 0 4px 14px -4px rgba(0,0,0,0.4);
   --shadow-glow-amber: 0 0 0 1px rgba(242,169,59,0.18), 0 8px 24px -6px rgba(242,169,59,0.3);
   --shadow-glow-red: 0 0 0 1px rgba(224,96,78,0.18), 0 8px 24px -6px rgba(224,96,78,0.28);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 * {
@@ -141,7 +145,7 @@ input[type="range"].huddle-range::-moz-range-track {
 }
 
 .huddle-tab-btn {
-  transition: color 0.15s ease;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
 @keyframes floatUp {
@@ -163,4 +167,91 @@ input[type="range"].huddle-range::-moz-range-track {
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+
+/* ---- Toast: transition-based (not keyframes) so rapid-fire toasts retarget
+   smoothly instead of restarting from zero — and so it can animate OUT. ---- */
+.huddle-toast {
+  position: fixed;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  opacity: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  max-width: 380px;
+  text-align: center;
+  z-index: 50;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+}
+.huddle-toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---- Modal: symmetric enter/exit. Enter uses the existing keyframes;
+   closing swaps to a transition so it can animate back out the same path
+   it came in (up from the bottom), instead of vanishing instantly. ---- */
+.huddle-modal-backdrop {
+  animation: fadeIn 0.15s var(--ease-out);
+  opacity: 1;
+  transition: opacity 200ms var(--ease-out);
+}
+.huddle-modal-backdrop.huddle-closing {
+  animation: none;
+  opacity: 0;
+}
+.huddle-modal-sheet {
+  /* fill-mode intentionally omitted (defaults to none): once the entry
+     keyframe finishes, the animation stops overriding `transform` and
+     control reverts to the base value below — which is what lets the
+     close transition actually engage instead of getting silently
+     suppressed by a still-"held" animation on the same property. */
+  animation: floatUp 0.22s var(--ease-drawer);
+  transform: translateY(0);
+  transition: transform 220ms var(--ease-drawer);
+}
+.huddle-modal-sheet.huddle-closing {
+  animation: none;
+  transform: translateY(100%);
+}
+
+/* ---- Card mount-in: cards that enter a list (new pool, new fade, first
+   paint of a board) fade/rise in instead of teleporting. Runs once per
+   mount — existing cards never replay it on unrelated re-renders. ---- */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.huddle-card-in {
+  animation: cardIn 220ms var(--ease-out) both;
+}
+
+/* ---- Small state-change confirmations (join confirmed, settled banner)
+   bridge the swap from "action" to "result" instead of popping in. ---- */
+@keyframes stateIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.huddle-state-in {
+  animation: stateIn 180ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .huddle-toast {
+    transition: opacity 200ms ease;
+    transform: translateX(-50%) !important;
+  }
+  .huddle-modal-backdrop,
+  .huddle-modal-sheet,
+  .huddle-card-in,
+  .huddle-state-in {
+    animation: none !important;
+    transition: opacity 200ms ease !important;
+    transform: none !important;
+  }
 }

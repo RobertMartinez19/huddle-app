@@ -33,7 +33,7 @@ export default function PoolsTab({ onCreate }) {
           const rake = Math.round(potTotal * RAKE);
           const myPick = pool.picks.find((p) => p.friend === actingAs);
           return (
-            <Card key={pool.id} accent={pool.status === "settled" ? "var(--green)" : "var(--amber)"}>
+            <Card key={pool.id} enter accent={pool.status === "settled" ? "var(--green)" : "var(--amber)"}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
                   <Pill tone={pool.status === "settled" ? "green" : "amber"}>
@@ -74,7 +74,7 @@ export default function PoolsTab({ onCreate }) {
                 </div>
               )}
               {pool.status === "open" && myPick && (
-                <div style={{ marginTop: 11, fontSize: 12, color: "var(--green)", display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
+                <div className="huddle-state-in" style={{ marginTop: 11, fontSize: 12, color: "var(--green)", display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
                   <Check size={14} /> You're in on {myPick.side}
                 </div>
               )}
@@ -86,7 +86,7 @@ export default function PoolsTab({ onCreate }) {
                 </div>
               )}
               {pool.status === "settled" && (
-                <div style={{ marginTop: 11, fontSize: 12, color: "var(--amber-bright)", display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
+                <div className="huddle-state-in" style={{ marginTop: 11, fontSize: 12, color: "var(--amber-bright)", display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
                   <Trophy size={14} /> {pool.resultSide} covered — payouts distributed
                 </div>
               )}

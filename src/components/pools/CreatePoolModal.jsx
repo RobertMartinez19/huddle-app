@@ -13,13 +13,15 @@ export default function CreatePoolModal({ onClose }) {
   const game = GAMES.find((g) => g.id === gameId);
   const feePct = ((entryFee - 10) / (200 - 10)) * 100;
 
-  const submit = () => {
+  const submit = (dismiss) => {
     createPool(gameId, title || `${game.a} vs ${game.b} squad pool`, entryFee, splitRule);
-    onClose();
+    dismiss();
   };
 
   return (
     <ModalShell onClose={onClose} title="New Group Pool">
+      {(dismiss) => (
+        <>
       <Field label="Game">
         <select value={gameId} onChange={(e) => setGameId(e.target.value)} style={selectStyle}>
           {GAMES.map((g) => <option key={g.id} value={g.id}>{g.a} vs {g.b} · {g.time}</option>)}
@@ -45,9 +47,11 @@ export default function CreatePoolModal({ onClose }) {
             onClick={() => setSplitRule("winner-take-all")}>Winner take all</Button>
         </div>
       </Field>
-      <Button style={{ width: "100%", justifyContent: "center", marginTop: 6 }} onClick={submit}>
+      <Button style={{ width: "100%", justifyContent: "center", marginTop: 6 }} onClick={() => submit(dismiss)}>
         Create pool
       </Button>
+        </>
+      )}
     </ModalShell>
   );
 }

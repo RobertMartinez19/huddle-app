@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AppProvider, useApp } from "./context/AppContext.jsx";
 import Header from "./components/Header.jsx";
 import Nav from "./components/Nav.jsx";
@@ -8,6 +8,36 @@ import CreatePoolModal from "./components/pools/CreatePoolModal.jsx";
 import FadesTab from "./components/fades/FadesTab.jsx";
 import CreateFadeModal from "./components/fades/CreateFadeModal.jsx";
 import LedgerTab from "./components/ledger/LedgerTab.jsx";
+
+// Toasts fire on nearly every action (join, settle, insufficient balance),
+// so this has to survive being re-triggered mid-animation — hence a CSS
+// transition (retargets smoothly) rather than a keyframe (restarts from
+// zero). It also stays mounted a beat after the message clears so it can
+// slide back out instead of popping off instantly.
+function Toast({ message }) {
+  const [display, setDisplay] = useState(null);
+  const [visible, setVisible] = useState(false);
+  const hideTimer = useRef(null);
+
+  useEffect(() => {
+    if (message) {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+      setDisplay(message);
+      requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+    } else {
+      setVisible(false);
+      hideTimer.current = setTimeout(() => setDisplay(null), 200);
+    }
+    return () => clearTimeout(hideTimer.current);
+  }, [message]);
+
+  if (!display) return null;
+  return (
+    <div className={`huddle-toast${visible ? " huddle-toast-visible" : ""}`}>
+      {display}
+    </div>
+  );
+}
 
 function Shell() {
   const [tab, setTab] = useState("dashboard");
@@ -39,16 +69,7 @@ function Shell() {
       {showCreatePool && <CreatePoolModal onClose={() => setShowCreatePool(false)} />}
       {showCreateFade && <CreateFadeModal onClose={() => setShowCreateFade(false)} />}
 
-      {toast && (
-        <div style={{
-          position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)",
-          background: "var(--surface-2)", border: "1px solid var(--border)",
-          padding: "10px 16px", borderRadius: 10, fontSize: 13, maxWidth: 380,
-          textAlign: "center", animation: "floatUp 0.2s ease-out", zIndex: 50,
-        }}>
-          {toast}
-        </div>
-      )}
+      <Toast message={toast} />
     </div>
   );
 }

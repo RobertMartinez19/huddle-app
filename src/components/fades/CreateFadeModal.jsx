@@ -12,13 +12,15 @@ export default function CreateFadeModal({ onClose }) {
   const game = GAMES.find((g) => g.id === gameId);
   const stakePct = ((stake - 10) / (300 - 10)) * 100;
 
-  const submit = () => {
+  const submit = (dismiss) => {
     createFade(gameId, side, stake, actingAs);
-    onClose();
+    dismiss();
   };
 
   return (
     <ModalShell onClose={onClose} title="Open a Fade">
+      {(dismiss) => (
+        <>
       <Field label="Game">
         <select
           value={gameId}
@@ -42,9 +44,11 @@ export default function CreateFadeModal({ onClose }) {
       <div style={{ fontSize: 11, color: "var(--text-dim)", marginBottom: 10, lineHeight: 1.5 }}>
         Whoever takes the other side matches your {stake} pts. Winner takes the pot minus a {Math.round(RAKE * 100)}% house rake.
       </div>
-      <Button style={{ width: "100%", justifyContent: "center" }} onClick={submit}>
+      <Button style={{ width: "100%", justifyContent: "center" }} onClick={() => submit(dismiss)}>
         Post challenge as {actingAs}
       </Button>
+        </>
+      )}
     </ModalShell>
   );
 }

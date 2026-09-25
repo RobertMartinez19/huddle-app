@@ -34,7 +34,7 @@ export default function FadesTab({ onCreate }) {
           const otherSide = fade.side === game.a ? game.b : game.a;
           const accentColor = fade.status === "settled" ? "var(--green)" : fade.status === "matched" ? "var(--amber)" : "var(--red)";
           return (
-            <Card key={fade.id} accent={accentColor}>
+            <Card key={fade.id} enter accent={accentColor}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <Pill tone={fade.status === "settled" ? "green" : fade.status === "matched" ? "amber" : "red"}>
                   {fade.status === "open" ? "Open challenge" : fade.status === "matched" ? "Matched — awaiting result" : "Settled"}
@@ -96,7 +96,7 @@ export default function FadesTab({ onCreate }) {
                 </div>
               )}
               {fade.status === "settled" && (
-                <div style={{ marginTop: 11, fontSize: 12, color: "var(--amber-bright)", display: "flex", alignItems: "center", gap: 5, justifyContent: "center", fontWeight: 600 }}>
+                <div className="huddle-state-in" style={{ marginTop: 11, fontSize: 12, color: "var(--amber-bright)", display: "flex", alignItems: "center", gap: 5, justifyContent: "center", fontWeight: 600 }}>
                   <Flame size={14} /> {fade.resultSide} hit — winner paid out
                 </div>
               )}

@@ -75,8 +75,8 @@ export default function Dashboard({ onGoPools, onGoFades }) {
           This week's board
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {GAMES.map((g) => (
-            <Card key={g.id} interactive style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {GAMES.map((g, i) => (
+            <Card key={g.id} interactive enter delay={i * 40} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <Pill>{g.sport}</Pill>
                 <div style={{ fontFamily: "Oswald", fontWeight: 600, fontSize: 15, marginTop: 6 }}>{g.a} vs {g.b}</div>

@@ -42,7 +42,7 @@ export default function LedgerTab() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {ledger.map((entry) => (
-          <Card key={entry.id} style={{ padding: 13 }}>
+          <Card key={entry.id} enter style={{ padding: 13 }}>
             <div style={{ fontSize: 12.5, fontWeight: 500 }}>{entry.desc}</div>
             <div style={{ display: "flex", gap: 10, marginTop: 7, flexWrap: "wrap" }}>
               {entry.entries.map((e, i) => (

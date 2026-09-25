@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 
 export const selectStyle = {
@@ -24,22 +24,41 @@ export function Field({ label, children }) {
   );
 }
 
+// Sheet close time — must match the CSS transition duration on
+// .huddle-modal-sheet so the component unmounts exactly when the
+// slide-down finishes, not before (cut off) or after (dead click-through).
+const CLOSE_MS = 220;
+
 export default function ModalShell({ title, onClose, children }) {
+  const [closing, setClosing] = useState(false);
+
+  // Plays the exit the same way the sheet entered (up from the bottom),
+  // then hands off to the parent's onClose once the animation settles —
+  // this is what makes it a real dismissal instead of an instant unmount.
+  const dismiss = () => {
+    if (closing) return;
+    setClosing(true);
+    setTimeout(onClose, CLOSE_MS);
+  };
+
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(6,10,8,0.72)", zIndex: 100,
-      backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-      animation: "fadeIn 0.15s ease-out",
-    }} onClick={onClose}>
+    <div
+      className={`huddle-modal-backdrop${closing ? " huddle-closing" : ""}`}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(6,10,8,0.72)", zIndex: 100,
+        backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+      }}
+      onClick={dismiss}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
+        className={`huddle-modal-sheet${closing ? " huddle-closing" : ""}`}
         style={{
           background: "linear-gradient(175deg, var(--surface-2), var(--surface))",
           borderTop: "1px solid var(--border-bright)",
           borderLeft: "1px solid var(--border)", borderRight: "1px solid var(--border)",
           borderRadius: "20px 20px 0 0", padding: "22px 20px 24px", width: "100%", maxWidth: 480,
-          animation: "floatUp 0.22s cubic-bezier(0.2,0.8,0.2,1)",
           boxShadow: "0 -20px 50px -12px rgba(0,0,0,0.5)",
         }}
       >
@@ -49,14 +68,14 @@ export default function ModalShell({ title, onClose, children }) {
         }} />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
           <div style={{ fontFamily: "Oswald", fontWeight: 600, fontSize: 18, letterSpacing: 0.2 }}>{title}</div>
-          <button onClick={onClose} style={{
+          <button onClick={dismiss} style={{
             background: "var(--surface-3)", border: "1px solid var(--border-bright)", borderRadius: 999,
             padding: 7, cursor: "pointer", display: "flex", lineHeight: 0,
           }}>
             <X size={15} color="var(--text-dim)" />
           </button>
         </div>
-        {children}
+        {typeof children === "function" ? children(dismiss) : children}
       </div>
     </div>
   );
