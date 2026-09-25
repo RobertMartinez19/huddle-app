@@ -3,7 +3,9 @@ import { X } from "lucide-react";
 
 export const selectStyle = {
   width: "100%", background: "var(--surface-2)", color: "var(--text)",
-  border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px", fontSize: 13,
+  border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px",
+  // 16px is the minimum that stops iOS Safari from zooming the page on focus.
+  fontSize: 16,
   outline: "none", transition: "border-color 0.15s ease, box-shadow 0.15s ease",
   appearance: "none", WebkitAppearance: "none",
   backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2393A99C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",

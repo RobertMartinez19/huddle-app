@@ -14,7 +14,8 @@ export default function Nav({ tab, setTab, poolBadge, fadeBadge }) {
   return (
     <div style={{
       position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-      width: "100%", maxWidth: 480, padding: "0 10px 16px", pointerEvents: "none",
+      width: "100%", maxWidth: 480, pointerEvents: "none",
+      padding: "0 10px calc(16px + env(safe-area-inset-bottom, 0px))",
     }}>
       <div style={{
         display: "flex", padding: "6px", gap: 2,

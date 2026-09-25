@@ -31,6 +31,9 @@ html, body {
   margin: 0;
   padding: 0;
   background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
 }
 
 body {
@@ -40,7 +43,8 @@ body {
     radial-gradient(ellipse 600px 500px at 50% 115%, rgba(125,169,255,0.06), transparent 55%);
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh;
+  min-height: 100vh; /* fallback for old browsers */
+  min-height: 100dvh;
 }
 
 #root {
@@ -59,8 +63,20 @@ select, input, button {
   font-family: 'Inter', sans-serif;
 }
 
-button {
+/* iOS Safari zooms the page on focus if an input's font-size is under 16px.
+   Only bump it for touch/coarse pointers so the desktop density is untouched. */
+@media (pointer: coarse) {
+  input, textarea, select {
+    font-size: 16px;
+  }
+}
+
+button, a, [role="button"] {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 ::selection {
@@ -113,10 +129,12 @@ input[type="range"].huddle-range::-moz-range-track {
 .huddle-card-hover {
   transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.16s ease, box-shadow 0.16s ease;
 }
-.huddle-card-hover:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-bright);
-  box-shadow: var(--shadow-md);
+@media (hover: hover) and (pointer: fine) {
+  .huddle-card-hover:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-bright);
+    box-shadow: var(--shadow-md);
+  }
 }
 .huddle-card-hover:active {
   transform: translateY(0px) scale(0.994);

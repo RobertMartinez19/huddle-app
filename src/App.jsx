@@ -20,7 +20,7 @@ function Shell() {
 
   return (
     <div style={{
-      background: "var(--bg)", color: "var(--text)", minHeight: "100vh",
+      background: "var(--bg)", color: "var(--text)", minHeight: "100dvh",
       maxWidth: 480, margin: "0 auto", position: "relative", paddingBottom: 90,
     }}>
       <Header />

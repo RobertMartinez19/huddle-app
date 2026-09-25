@@ -25,9 +25,13 @@ export function AppProvider({ children }) {
     setLedger((L) => [{ id: nextId(), desc, entries, ts: new Date() }, ...L]);
   }, []);
 
-  const adjustBalance = useCallback((name, delta) => {
-    setBalances((b) => ({ ...b, [name]: b[name] + delta }));
-  }, []);
+  // Every state-updating function below reads the state it needs from the
+  // closure (fresh on every render) and does its affordability checks
+  // *before* calling any setState. None of them call setState from inside
+  // another updater — nesting side effects (flash/log/adjustBalance) inside
+  // a setPools/setFades updater is what was causing double-charges and
+  // duplicate toasts/ledger entries under React.StrictMode's dev
+  // double-invoke of updater functions.
 
   // ---- POOL LOGIC ----
   const createPool = useCallback((gameId, title, entryFee, splitRule) => {
@@ -39,96 +43,110 @@ export function AppProvider({ children }) {
   }, [flash]);
 
   const joinPool = useCallback((poolId, friend, side) => {
-    setPools((P) => {
-      const pool = P.find((p) => p.id === poolId);
-      if (!pool || pool.picks.some((pk) => pk.friend === friend)) return P;
-      let ok = true;
-      setBalances((b) => {
-        if (b[friend] < pool.entryFee) { ok = false; return b; }
-        return { ...b, [friend]: b[friend] - pool.entryFee };
-      });
-      if (!ok) { flash(`${friend} doesn't have enough points.`); return P; }
-      log(`${friend} joined "${pool.title}" on ${side}`, [{ friend, delta: -pool.entryFee }]);
-      return P.map((p) => p.id === poolId ? { ...p, picks: [...p.picks, { friend, side }] } : p);
-    });
-  }, [flash, log]);
+    const pool = pools.find((p) => p.id === poolId);
+    if (!pool || pool.picks.some((pk) => pk.friend === friend)) return;
+    if (balances[friend] < pool.entryFee) {
+      flash(`${friend} doesn't have enough points.`);
+      return;
+    }
+
+    setBalances((b) => ({ ...b, [friend]: b[friend] - pool.entryFee }));
+    setPools((P) => P.map((p) =>
+      p.id === poolId ? { ...p, picks: [...p.picks, { friend, side }] } : p
+    ));
+    log(`${friend} joined "${pool.title}" on ${side}`, [{ friend, delta: -pool.entryFee }]);
+  }, [pools, balances, flash, log]);
 
   const settlePool = useCallback((poolId, winningSide) => {
-    setPools((P) => {
-      const pool = P.find((p) => p.id === poolId);
-      if (!pool) return P;
-      const potTotal = pool.picks.length * pool.entryFee;
-      const rake = Math.round(potTotal * RAKE);
-      const payout = potTotal - rake;
-      const winners = pool.picks.filter((pk) => pk.side === winningSide);
-      const entries = [];
+    const pool = pools.find((p) => p.id === poolId);
+    if (!pool || pool.status !== "open") return;
 
-      if (winners.length === 0) {
-        pool.picks.forEach((pk) => {
-          adjustBalance(pk.friend, pool.entryFee);
-          entries.push({ friend: pk.friend, delta: pool.entryFee });
-        });
-        log(`"${pool.title}" settled — nobody hit it, entries refunded`, entries);
-      } else {
-        const share = Math.floor(payout / winners.length);
-        winners.forEach((pk) => {
-          adjustBalance(pk.friend, share);
-          entries.push({ friend: pk.friend, delta: share });
-        });
-        setHouseTake((h) => h + rake);
-        log(
-          `"${pool.title}" settled — ${winningSide} covered, ${winners.length} winner(s) split ${fmt(payout)} (house rake ${fmt(rake)})`,
-          entries
-        );
-      }
-      return P.map((p) => p.id === poolId ? { ...p, status: "settled", resultSide: winningSide } : p);
+    const potTotal = pool.picks.length * pool.entryFee;
+    const rake = Math.round(potTotal * RAKE);
+    const payout = potTotal - rake;
+    const winners = pool.picks.filter((pk) => pk.side === winningSide);
+    const entries = [];
+    const deltas = {};
+
+    if (winners.length === 0) {
+      pool.picks.forEach((pk) => {
+        deltas[pk.friend] = (deltas[pk.friend] || 0) + pool.entryFee;
+        entries.push({ friend: pk.friend, delta: pool.entryFee });
+      });
+    } else {
+      const share = Math.floor(payout / winners.length);
+      winners.forEach((pk) => {
+        deltas[pk.friend] = (deltas[pk.friend] || 0) + share;
+        entries.push({ friend: pk.friend, delta: share });
+      });
+      setHouseTake((h) => h + rake);
+    }
+
+    setBalances((b) => {
+      const next = { ...b };
+      Object.entries(deltas).forEach(([friend, delta]) => { next[friend] += delta; });
+      return next;
     });
-  }, [adjustBalance, log]);
+    setPools((P) => P.map((p) =>
+      p.id === poolId ? { ...p, status: "settled", resultSide: winningSide } : p
+    ));
+
+    if (winners.length === 0) {
+      log(`"${pool.title}" settled — nobody hit it, entries refunded`, entries);
+    } else {
+      log(
+        `"${pool.title}" settled — ${winningSide} covered, ${winners.length} winner(s) split ${fmt(payout)} (house rake ${fmt(rake)})`,
+        entries
+      );
+    }
+  }, [pools, log]);
 
   // ---- FADE LOGIC ----
   const createFade = useCallback((gameId, side, stake, creator) => {
-    let ok = true;
-    setBalances((b) => {
-      if (b[creator] < stake) { ok = false; return b; }
-      return { ...b, [creator]: b[creator] - stake };
-    });
-    if (!ok) { flash(`${creator} doesn't have enough points to stake that.`); return; }
+    if (balances[creator] < stake) {
+      flash(`${creator} doesn't have enough points to stake that.`);
+      return;
+    }
+
+    setBalances((b) => ({ ...b, [creator]: b[creator] - stake }));
     setFades((F) => [
       { id: nextId(), gameId, side, stake, creator, opponent: null, status: "open", resultSide: null },
       ...F,
     ]);
     log(`${creator} opened a fade: ${side} for ${fmt(stake)}`, [{ friend: creator, delta: -stake }]);
-  }, [flash, log]);
+  }, [balances, flash, log]);
 
   const acceptFade = useCallback((fadeId, opponent) => {
-    setFades((F) => {
-      const fade = F.find((f) => f.id === fadeId);
-      if (!fade || fade.creator === opponent) return F;
-      let ok = true;
-      setBalances((b) => {
-        if (b[opponent] < fade.stake) { ok = false; return b; }
-        return { ...b, [opponent]: b[opponent] - fade.stake };
-      });
-      if (!ok) { flash(`${opponent} doesn't have enough points.`); return F; }
-      log(`${opponent} took the other side of ${fade.creator}'s fade`, [{ friend: opponent, delta: -fade.stake }]);
-      return F.map((f) => f.id === fadeId ? { ...f, opponent, status: "matched" } : f);
-    });
-  }, [flash, log]);
+    const fade = fades.find((f) => f.id === fadeId);
+    if (!fade || fade.status !== "open" || fade.creator === opponent) return;
+    if (balances[opponent] < fade.stake) {
+      flash(`${opponent} doesn't have enough points.`);
+      return;
+    }
+
+    setBalances((b) => ({ ...b, [opponent]: b[opponent] - fade.stake }));
+    setFades((F) => F.map((f) =>
+      f.id === fadeId ? { ...f, opponent, status: "matched" } : f
+    ));
+    log(`${opponent} took the other side of ${fade.creator}'s fade`, [{ friend: opponent, delta: -fade.stake }]);
+  }, [fades, balances, flash, log]);
 
   const settleFade = useCallback((fadeId, winningSide) => {
-    setFades((F) => {
-      const fade = F.find((f) => f.id === fadeId);
-      if (!fade || fade.status !== "matched") return F;
-      const pot = fade.stake * 2;
-      const rake = Math.round(pot * RAKE);
-      const payout = pot - rake;
-      const winner = winningSide === fade.side ? fade.creator : fade.opponent;
-      adjustBalance(winner, payout);
-      setHouseTake((h) => h + rake);
-      log(`Fade settled — ${winner} wins ${fmt(payout)} (house rake ${fmt(rake)})`, [{ friend: winner, delta: payout }]);
-      return F.map((f) => f.id === fadeId ? { ...f, status: "settled", resultSide: winningSide } : f);
-    });
-  }, [adjustBalance, log]);
+    const fade = fades.find((f) => f.id === fadeId);
+    if (!fade || fade.status !== "matched") return;
+
+    const pot = fade.stake * 2;
+    const rake = Math.round(pot * RAKE);
+    const payout = pot - rake;
+    const winner = winningSide === fade.side ? fade.creator : fade.opponent;
+
+    setBalances((b) => ({ ...b, [winner]: b[winner] + payout }));
+    setHouseTake((h) => h + rake);
+    setFades((F) => F.map((f) =>
+      f.id === fadeId ? { ...f, status: "settled", resultSide: winningSide } : f
+    ));
+    log(`Fade settled — ${winner} wins ${fmt(payout)} (house rake ${fmt(rake)})`, [{ friend: winner, delta: payout }]);
+  }, [fades, log]);
 
   const value = {
     actingAs, setActingAs,

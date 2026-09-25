@@ -20,6 +20,12 @@ const VARIANTS = {
   },
 };
 
+// Only apply the hover-brighten effect on inputs that can actually hover
+// (a mouse), so it never gets "stuck on" after a tap on touch devices.
+const canHover = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia?.("(hover: hover) and (pointer: fine)").matches;
+
 export default function Button({ children, onClick, variant = "primary", disabled, style, small }) {
   const v = VARIANTS[variant];
   return (
@@ -35,12 +41,18 @@ export default function Button({ children, onClick, variant = "primary", disable
         justifyContent: "center", gap: 6,
         boxShadow: disabled ? "none" : v.shadow,
         transition: "transform 0.12s cubic-bezier(0.2,0.8,0.2,1), filter 0.15s ease, box-shadow 0.15s ease",
+        touchAction: "manipulation",
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        WebkitTapHighlightColor: "transparent",
         ...style,
       }}
-      onMouseEnter={(e) => { if (!disabled) e.currentTarget.style.filter = "brightness(1.08)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; e.currentTarget.style.transform = "scale(1)"; }}
-      onMouseDown={(e) => { if (!disabled) e.currentTarget.style.transform = "scale(0.96)"; }}
-      onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      onMouseEnter={(e) => { if (!disabled && canHover()) e.currentTarget.style.filter = "brightness(1.08)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
+      onPointerDown={(e) => { if (!disabled) e.currentTarget.style.transform = "scale(0.96)"; }}
+      onPointerUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      onPointerLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+      onPointerCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
     >
       {children}
     </button>
